@@ -1,4 +1,4 @@
-package ru.gb_test.evch;
+package cjnt.test;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;

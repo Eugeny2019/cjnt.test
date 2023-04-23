@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-public class CheckEmailReportPresentTest {
+public class CheckEmailReportTest {
     private WebDriver driver;
     private static String loginPageUrl;
     private static String reportPageUrl;
@@ -49,7 +49,7 @@ public class CheckEmailReportPresentTest {
 
     @Test
     @Feature("Вход по логину и паролю")
-    public void signIn() {
+    public void CheckEmailReportPresentTest() {
         LoginPage loginPage = new LoginPage(driver);
         HelloTasksPage helloTasksPage = loginPage.loginIntoConjointly();
         Assertions.assertTrue(Objects.nonNull(helloTasksPage));

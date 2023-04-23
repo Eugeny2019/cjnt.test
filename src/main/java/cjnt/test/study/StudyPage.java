@@ -111,6 +111,9 @@ public class StudyPage extends BaseView {
         int size = currentWebElement.findElements(By.xpath("//div[contains(@class,'term')]")).size();
         int[] numbers = generateNumbersConstantSum(total, size);
         for (int i = 0; i < size; i++) {
+            while (!currentWebElement.findElement(By.xpath("//div[contains(@class,'term')][" + (i + 1) + "]//input[@type='number']")).isEnabled()) {
+                Thread.yield();
+            }
             currentWebElement
                     .findElement(
                             By.xpath(

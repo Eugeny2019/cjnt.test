@@ -21,7 +21,7 @@ import java.util.Objects;
 import java.util.Properties;
 
 public class CheckEmailReportTest {
-    private WebDriver driver;
+    private static WebDriver driver = null;
     private static String loginPageUrl;
     private static String reportPageUrl;
 
@@ -29,12 +29,9 @@ public class CheckEmailReportTest {
 //    TestWatcher testWatcher = new JUnitExtention();
 
     @BeforeAll
-    static void registerDriver() {
+    static void registerDriver() throws IOException{
         WebDriverManager.chromedriver().setup();
-    }
 
-    @BeforeEach
-    public void ReadPropertiesAndInitDriver() throws IOException {
         Properties prop = new Properties();
         prop.load(new FileInputStream("src/main/resources/my.properties"));
         loginPageUrl = prop.getProperty("loginPageURL");
@@ -45,18 +42,20 @@ public class CheckEmailReportTest {
         driver = new EventFiringDecorator(new AdditionalLogger()).decorate(new ChromeDriver(options));
         driver.manage().window().setSize(new Dimension(1500, 900));
         driver.get(loginPageUrl);
-    }
 
-    @Test
-    @Feature("Вход по логину и паролю")
-    public void CheckEmailReportPresentTest() {
         LoginPage loginPage = new LoginPage(driver);
         HelloTasksPage helloTasksPage = loginPage.loginIntoConjointly();
         Assertions.assertTrue(Objects.nonNull(helloTasksPage));
+    }
 
-        driver.get(reportPageUrl);
+    @Test
+    @Feature("Проверка наличия опреденных данных в таблице ответов Email")
+    public void CheckEmailReportPresentTest() {
+        if (!driver.getCurrentUrl().contains("report")) {
+            driver.get(reportPageUrl);
+        }
         ReportPage reportPage = new ReportPage(driver);
-        List<String> reportTable = reportPage.checkEmailReportPresent();
+        List<String> reportTable = reportPage.getDataFromEmailReportTextResponses();
         List<String> checkTable = List.of(
                 "62842", "62843", "62845", "62846", "62847",
                 "ipsum@natoque.com", "quis@ridiculus.com", "pellentesque@eget.com", "parturient@pellentesque.com", "mus@sit.com"
@@ -64,10 +63,32 @@ public class CheckEmailReportTest {
         Assertions.assertTrue(checkTable.containsAll(reportTable));
     }
 
+    @Test
+    @Feature("Проверка, что файл экспорта в Эксел вопроса Email не пустой")
+    public void CheckEmailExportExcelReportNotEmptyTest() {
+        if (!driver.getCurrentUrl().contains("report")) {
+            driver.get(reportPageUrl);
+        }
+        ReportPage reportPage = new ReportPage(driver);
+        int fileSize = reportPage.makeExcelExportFileForEmailReport();
 
+        Assertions.assertTrue(fileSize > 20000);
+    }
 
-    @AfterEach
-    void tearDown() {
+    @Test
+    @Feature("Проверка, что файл экспорта в Эксел вопроса Email не пустой")
+    public void CheckEmailExportPowerPointReportNotEmptyTest() {
+        if (!driver.getCurrentUrl().contains("report")) {
+            driver.get(reportPageUrl);
+        }
+        ReportPage reportPage = new ReportPage(driver);
+        int fileSize = reportPage.makePowerPointExportFileForEmailReport();
+
+        Assertions.assertTrue(fileSize > 20000);
+    }
+
+    @AfterAll
+    static void tearDown() {
         LogEntries logs = driver.manage().logs().get(LogType.BROWSER);
         for (LogEntry log : logs) {
             Allure.addAttachment("Browser stacktrace:\n", log.getMessage());
